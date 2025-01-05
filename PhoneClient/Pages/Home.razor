@@ -1,0 +1,68 @@
+﻿@page "/"
+@using Newtonsoft.Json
+
+<PageTitle>Dashboard</PageTitle>
+
+
+
+
+
+
+@code{
+    public string? SearchQuery { get; set; } = null;
+    public List<Country> Countries { get; set; }
+    public int Offset { get; set; } = 1;
+    public int Limit { get; set; } = 20;
+    private bool Previous => Offset > 1;
+    private bool Next => Countries != null && Countries.Count == Limit;
+    public string ErrorMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCountry();
+    }
+
+    private async Task LoadCountry(){
+        var result = await countryService.GetCountryData(Offset, Limit, SearchQuery);
+        //Countries = JsonSerializer.Deserialize<List<Country>>(result);
+    }
+
+    private async Task SearchPage(){
+        Offset = 1;
+        await LoadCountry();
+    }
+
+    private async Task PreviousPage(){
+        if(Previous){
+            Offset--;
+            await LoadCountry();
+        }
+    }
+
+    private async Task NextPage(){
+        if(Next){
+            Offset++;
+            await LoadCountry();
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* <h2>Dashboard Page </h2> *@
+@* <DxCalendar @bind-SelectedDate="@selectedDate" /> *@
+@* @code{ *@
+@*     DateTime selectedDate { get; set; } = DateTime.UtcNow; *@
+@* } *@

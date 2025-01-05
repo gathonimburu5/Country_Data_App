@@ -1,0 +1,154 @@
+﻿@page "/product"
+
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <EditForm Model="product" OnValidSubmit="CreateProducts" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="card">
+                    <div class="card-header">Create Product</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Product Name</label>
+                            <InputText @bind-Value="product.Name" class="form-control" placeholder="enter product name"></InputText>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label">Price</label>
+                            <InputNumber @bind-Value="product.Price" class="form-control" placeholder="enter product price"></InputNumber>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label">Quantity</label>
+                            <InputNumber @bind-Value="product.Quantity" class="form-control" placeholder="enter product quantity"></InputNumber>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label">Description</label>
+                            <InputTextArea @bind-Value="product.Description" rows="2" class="form-control" placeholder="enter product description"></InputTextArea>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label @(ImageUploadMessage == "" ? "" : "text-danger") "> @(ImageUploadMessage == "" ? "Upload Image" : ImageUploadMessage) </label>
+                            <InputFile class="form-control" onchange="UploadImage" ></InputFile>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        @if (ShowSaveButton)
+                        {
+                            <button type="submit" class="btn btn-primary float-end"><i class="fa fa-database"></i> Save Product</button>
+                        }
+                        <BusyButtonComponent ShowBusyButton="ShowBusyButton" ></BusyButtonComponent>
+                    </div>
+                </div>                
+            </EditForm>
+        </div>
+        <div class="col-8">
+            <div class="card">
+                <div class="card-header">Product List</div>
+                <div class="card-body">
+                    <div class="table-responsive-vertical shadow-z-1">
+                        <table id="table" class="table table-hover table-mc-light-blue">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Created On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            @foreach (var prod in productList)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td data-title="Name">@prod.Name</td>
+                                        <td data-title="Description">@prod.Description</td>
+                                        <td data-title="Price">@prod.Price</td>
+                                        <td data-title="Qty">@prod.Quantity</td>
+                                        <td data-title="Created_On">@prod.CreatedOn.ToString("MMMM dd, yyyy")</td>
+                                        <td data-title="Actions"></td>
+                                    </tr>
+                                </tbody>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @* <div class="row">
+                <div class="card">
+                    <DxGrid Data="productList">
+                        <Columns>
+                            <DxGridDataColumn FieldName="Name"></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Description"></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Price"></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Quantity"></DxGridDataColumn>
+                        </Columns>
+                    </DxGrid>
+                </div>
+            </div> *@
+
+        </div>
+    </div>
+</div>
+
+
+@* <MessageDialog @ref="messageDialog"></MessageDialog> *@
+
+@code {
+    public Product product { get; set; } = new();
+    public List<Product> productList { get; set; }
+    public bool featured { get; set; } = true;
+    string ImageUploadMessage = "";
+    async Task CreateProducts()
+    {
+        ShowSaveButton = false;
+        ShowBusyButton = !ShowSaveButton;
+        if(string.IsNullOrEmpty(product.ProductImage)){
+            toastService.ShowWarning("you need to choose product image");
+            //messageDialog!.SetDialogValue("warning", "you need to choose product image");
+            SetMessageDialog();
+            return;
+        }
+
+        var response = await productService.CreateProductRecords(product);
+        if (response.Code == 200)
+            toastService.ShowSuccess(response.Message);
+        //messageDialog!.SetDialogValue("success", response.Message);
+        else
+            toastService.ShowError(response.Message);
+        //messageDialog!.SetDialogValue("danger", response.Message);
+        SetMessageDialog();
+        return;
+    }
+    async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        if(e.File.Name.ToLower().Contains(".png")){
+            var format = "image/png";
+            var resizeImage = await e.File.RequestImageFileAsync(format, 300, 300);
+            var buffer = new byte[resizeImage.Size];
+            await resizeImage.OpenReadStream().ReadAsync(buffer);
+            var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            ImageUploadMessage = "";
+            product.ProductImage = imageData;
+            imageData = "";
+            return;
+        }
+        ImageUploadMessage = "PNG File Needed";
+        return;
+    }
+    //MessageDialog? messageDialog;
+    public bool ShowBusyButton { get; set; }
+    public bool ShowSaveButton { get; set; } = true;
+    private async void SetMessageDialog(){
+        //await messageDialog!.ShowMessage();
+        ShowBusyButton = false;
+        ShowSaveButton = !ShowBusyButton;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        productList = await productService.GetProductList(featured);
+    }
+
+}
