@@ -2,17 +2,69 @@
 @using Newtonsoft.Json
 
 <PageTitle>Dashboard</PageTitle>
+<div class="container d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">Product List</div>
+                <div class="card-body">
+                    <div class="table-responsive-vertical shadow-z-1">
+                        <table id="table" class="table table-hover table-mc-light-blue">
+                            <thead>
+                                <tr>
+                                    <th>Short Code</th>
+                                    <th>Country Code</th>
+                                    <th>Phone Code</th>
+                                    <th>Country Flag</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            @foreach (var country in Countries)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td>@country.ShortCode</td>
+                                        <td>@country.Name</td>
+                                        <td>@country.PhoneCode</td>
+                                        <td>@country.Flag</td>
+                                        <td>
+                                            <select name="" id="">
+                                                <option value=""></option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
+<div class="grid-container">
+    <DxGrid Data="@Countries"
+            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+            TextWrapEnabled="false"
+            PageSize="10">
+        <Columns>
+            <DxGridDataColumn FieldName="ShortCode" Caption="Country Code" />
+            <DxGridDataColumn FieldName="Name" Caption="Country Name" />
+            <DxGridDataColumn FieldName="PhoneCode" Caption="Phone Code" />
+            <DxGridDataColumn FieldName="Flag" Caption="Country Flag" />
+            <DxGridDataColumn FieldName="Actions" />
+        </Columns>
+    </DxGrid>
+</div>
 
 
 
 @code{
-    public string? SearchQuery { get; set; } = null;
-    public List<Country> Countries { get; set; }
-    public int Offset { get; set; } = 1;
-    public int Limit { get; set; } = 20;
+    private string? SearchQuery = null;
+    private List<ModifiedCountry> Countries = new();
+    private int Offset = 1;
+    private int Limit = 10;
     private bool Previous => Offset > 1;
     private bool Next => Countries != null && Countries.Count == Limit;
     public string ErrorMessage { get; set; }
@@ -23,8 +75,7 @@
     }
 
     private async Task LoadCountry(){
-        var result = await countryService.GetCountryData(Offset, Limit, SearchQuery);
-        //Countries = JsonSerializer.Deserialize<List<Country>>(result);
+        Countries = await countryService.getModifiedCountryRecordAsync(Offset, Limit, SearchQuery);
     }
 
     private async Task SearchPage(){

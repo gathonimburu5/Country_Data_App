@@ -9,9 +9,12 @@ namespace PhoneBackend.Controllers
     public class CountryController : ControllerBase
     {
         private readonly ICountryInterface countryService;
-        public CountryController(ICountryInterface countryService)
+        private readonly ILogger<CountryController> logger;
+
+        public CountryController(ICountryInterface countryService, ILogger<CountryController> logger)
         {
             this.countryService = countryService;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -19,7 +22,33 @@ namespace PhoneBackend.Controllers
         public async Task<IActionResult> GetAllCountryData(int offset = 1, int limit = 20, string? searchQuery = null)
         {
             var county = await countryService.GetCountryData(offset, limit, searchQuery);
+            logger.LogInformation("Controller: Country", county.ToString());
             return Ok(county);
+        }
+
+        [HttpGet]
+        [Route("GetModifiedCountryRecord")]
+        public async Task<IActionResult> GetModifiedCountryRecord(int offset = 1, int limit = 20, string? searchQuery = null)
+        {
+            var county = await countryService.getModifiedCountryRecordAsync(offset, limit, searchQuery);
+            return Ok(county);
+        }
+
+        [HttpGet]
+        [Route("GetModifiedCurrencyRecord")]
+        public async Task<IActionResult> GetModifiedCurrencyRecord(string code)
+        {
+            var currency = await countryService.getModifiedCurrencyAsync(code);
+            return Ok(currency);
+        }
+
+        [HttpGet]
+        [Route("GetModifiedRegionRecords")]
+        public async Task<IActionResult> GetModifiedRegionRecords(string code, int offset = 1, int limit = 20,
+            string? seachQuery = null)
+        {
+            var region = await countryService.getMOdifiedRegionRecordsAsync(code, offset, limit, seachQuery);
+            return Ok(region);
         }
 
         [HttpGet]

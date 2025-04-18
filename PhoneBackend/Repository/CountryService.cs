@@ -1,6 +1,7 @@
 ﻿using CountryData.Standard;
 using Newtonsoft.Json;
 using PhoneLibrary.Interfaces;
+using PhoneLibrary.Models;
 
 namespace PhoneBackend.Repository
 {
@@ -53,6 +54,55 @@ namespace PhoneBackend.Repository
         {
             var currency = countryHelper.GetCurrencyCodesByCountryCode(code);
             return Task.FromResult(currency);
+        }
+
+        public Task<List<ModifiedCountry>> getModifiedCountryRecordAsync(int offset = 1, int limit = 20, string? searchQuery = null)
+        {
+            var countries = countryHelper.GetCountryData();
+            var customizedCountry = countries.Select(x => new ModifiedCountry
+            {
+                ShortCode = x.CountryShortCode,
+                Name = x.CountryName,
+                PhoneCode = x.PhoneCode,
+                Flag = x.CountryFlag
+            }).ToList();
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                searchQuery = searchQuery.ToLower();
+                customizedCountry = customizedCountry.Where(x => x.ShortCode.ToLower().Contains(searchQuery)).ToList();
+            }
+            var pagination = customizedCountry.Skip((offset - 1) * limit).Take(limit).ToList();
+            return Task.FromResult(pagination);
+        }
+
+        public Task<List<ModifiedRegion>> getMOdifiedRegionRecordsAsync(string code, int offset = 1, int limit = 20, string? searchQuery = null)
+        {
+            var region = countryHelper.GetRegionByCountryCode(code);
+            var modifiedRegions = region.Select(x => new ModifiedRegion
+            {
+                Code = x.ShortCode,
+                Name = x.Name
+            }).ToList();
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                searchQuery = searchQuery.ToLower();
+                modifiedRegions = modifiedRegions.Where(x =>
+                    x.Code.ToLower().Contains(searchQuery) || x.Name.ToLower().Contains(searchQuery)).ToList();
+            }
+
+            var paginatedRegion = modifiedRegions.Skip((offset - 1) * limit).Take(limit).ToList();
+            return Task.FromResult(paginatedRegion);
+        }
+
+        public Task<List<ModifiedCurrency>> getModifiedCurrencyAsync(string code)
+        {
+            var currency = countryHelper.GetCurrencyCodesByCountryCode(code);
+            var modifiedCurrency = currency.Select(x => new ModifiedCurrency
+            {
+                Code = x.Code,
+                Name = x.Name
+            }).ToList();
+            return Task.FromResult(modifiedCurrency);
         }
 
         public Task<List<Regions>> GetRegionByCountyCode(string code)

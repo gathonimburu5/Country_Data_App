@@ -55,6 +55,27 @@ namespace PhoneClient.Services
             return null;
         }
 
+        public async Task<List<ModifiedCountry>> getModifiedCountryRecordAsync(int offset = 1, int limit = 20, string? searchQuery = null)
+        {
+            var url = $"api/Country/GetModifiedCountryRecord?offset={offset}&limit={limit}&searchQuery={searchQuery}";
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                return await helperClass.DeserializeJsonStringList<ModifiedCountry>(response);
+            }
+            return null;
+        }
+
+        public Task<List<ModifiedCurrency>> getModifiedCurrencyAsync(string code)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<ModifiedRegion>> getMOdifiedRegionRecordsAsync(string code, int offset = 1, int limit = 20, string? searchQuery = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<Regions>> GetRegionByCountyCode(string code)
         {
             var url = $"api/Country/GetCurrencyPerCountry?code={code}";

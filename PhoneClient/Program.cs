@@ -16,5 +16,6 @@ builder.Services.AddScoped<IProductInterface, ProductService>();
 builder.Services.AddScoped<ICountryInterface, CountryService>();
 builder.Services.AddBlazoredToast();
 builder.Services.AddDevExpressBlazor(x => x.BootstrapVersion = BootstrapVersion.v5);
+//builder.Services.AddMvc();
 
 await builder.Build().RunAsync();

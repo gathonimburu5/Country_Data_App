@@ -16,7 +16,11 @@ builder.Services.AddRazorPages();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationContextDb>(option => option.UseNpgsql(builder.Configuration.GetConnectionString("ProductDbConnections") ?? throw new InvalidOperationException("connection string is invalid") ));
+builder.Services.AddDbContext<ApplicationContextDb>(option =>
+{
+    option.UseNpgsql(builder.Configuration.GetConnectionString("ProductDbConnections") ??
+                     throw new InvalidOperationException("connection string is invalid"));
+});
 
 var app = builder.Build();
 
